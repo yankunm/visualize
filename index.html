@@ -34,15 +34,14 @@
                 }
             });
             const files = await response.json();
-            console.log(files);
             
             // Populate dropdown with options
             files.forEach(function (file) {
-            var option = document.createElement("option");
-            option.value = "./visualizations/" + file;
-            option.text = "Essay " + file.match(/\d+/)[0];
-            console.log(option.value);
-            select.add(option);
+                var option = document.createElement("option");
+                option.value = "./visualizations/" + file;
+                option.text = "Essay " + file.match(/\d+/)[0];
+                console.log(option.value);
+                select.add(option);
             });
         } catch (error) {
             console.error('Error fetching file list:', error);

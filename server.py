@@ -11,7 +11,6 @@ def get_file_list():
     
     try:
         files = [f for f in os.listdir(directory_path) if os.path.isfile(os.path.join(directory_path, f))]
-        print(jsonify(files))
         return jsonify(files)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
