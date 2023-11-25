@@ -61,7 +61,7 @@ def main():
     net = Network(directed=True)
     net.add_nodes(nodes, label=labels, color=colors, title=hover_text)
     net.add_edges(edges)
-    net.show(f"visualize{essay}.html", notebook=False)
+    net.show(f"./visualizations/visualize{essay}.html", notebook=False)
 
 
 if __name__ == "__main__":
