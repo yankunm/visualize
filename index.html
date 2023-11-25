@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HTML File Selector</title>
+  <title>Automated Essay Scoring</title>
 </head>
 <body>
 
-  <h1>Graphically Modeling ASAP Essay Dataset</h1>
+  <h1>Graphically Modeling Persuasive Essays on ASAP Essay Dataset</h1>
 
   <!-- Dropdown menu for selecting HTML files -->
   <label for="fileSelector">Select an Essay:</label>
@@ -26,26 +26,58 @@
         var select = document.getElementById("fileSelector");
 
         try {
-            // Fetch a list of HTML files from the server
-            const response = await fetch('http://127.0.0.1:5000/file-list', {
-                method: 'GET',
-                headers: {
-                    'Access-Control-Allow-Origin': '*',
-                }
-            });
-            const files = await response.json();
-            
-            // Populate dropdown with options
-            files.forEach(function (file) {
+            // Assume the files are in the "visualizations" directory
+            const directoryPath = './visualizations/';
+
+            // Fetch the list of files from the local directory
+            const response = await fetchLocalFiles(directoryPath);
+
+            // Extract file names from the HTML response
+            const files = extractFileNames(response.responseText);
+            console.log(files);
+
+           // Populate dropdown with options, starting from the second file
+            for (let i = 1; i < files.length; i++) {
                 var option = document.createElement("option");
-                option.value = "./visualizations/" + file;
-                option.text = "Essay " + file.match(/\d+/)[0];
+                option.value = directoryPath + files[i];
+                option.text = "Essay " + files[i].match(/\d+/)[0];
                 console.log(option.value);
                 select.add(option);
-            });
+            }
         } catch (error) {
             console.error('Error fetching file list:', error);
         }
+    }
+
+    function extractFileNames(htmlContent) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlContent, 'text/html');
+        const fileElements = doc.querySelectorAll('#files a');
+
+        const files = Array.from(fileElements).map((fileElement) => {
+            const fileName = fileElement.querySelector('.name').textContent;
+            return fileName.trim();
+        });
+
+        return files;
+    }
+
+    async function fetchLocalFiles(directoryPath) {
+        return new Promise((resolve, reject) => {
+            // You can customize this to fit your needs
+            const xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        resolve(xhr);
+                    } else {
+                        reject(new Error(`Failed to fetch local files (status ${xhr.status})`));
+                    }
+                }
+            };
+            xhr.open('GET', directoryPath, true);
+            xhr.send();
+        });
     }
 
     // Function to load the selected HTML file into the iframe
