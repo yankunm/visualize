@@ -17,10 +17,9 @@
 
   <!-- iframe to display the selected HTML file -->
   <div>
-    <iframe id="fileContent" width="600" height="800" frameborder="0"></iframe>
+    <iframe id="fileContent" width="1200" height="800" frameborder="0"></iframe>
   </div>
   
-
   <script>
     async function populateDropdown() {
         var select = document.getElementById("fileSelector");
@@ -91,6 +90,21 @@
 
     // Initial population of the dropdown
     populateDropdown().then(loadFile());
+
+    async function readLocalJsonFile(filePath) {
+      try {
+          const xhr = await fetchLocalFiles(filePath);
+          const jsonData = JSON.parse(xhr.responseText);
+          console.log(jsonData);
+          // Now you can work with the JSON data
+      } catch (error) {
+          console.error(error.message);
+      }
+  }
+
+    // Example usage
+    const localJsonFilePath = 'asap_essays.json';
+    readLocalJsonFile(localJsonFilePath);
   </script>
 
 </body>

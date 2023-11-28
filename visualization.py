@@ -1,6 +1,8 @@
 from pyvis.network import Network as Network
+from scipy.sparse import coo_matrix
 import json
 import os
+import numpy as np
 
 relations_file = "./optimized_relations.json"
 classification_file = "./classification_predictions.json"
@@ -11,7 +13,7 @@ color_dict = {0: "#E11299", 1:"#E11299", 2:"#FDE2FE"}
 def main():
     old_index = 0
     c_index = 0
-    
+
     # get all files names in "classification" folder
     folder_path = "./classification"
     file_names = [f for f in os.listdir(folder_path) if f.endswith('.json')]
@@ -27,7 +29,7 @@ def main():
 
     # For each file
     for essay in file_names:
-        if test_counter >= 5:
+        if test_counter >= 20:
             break;
         else:
             test_counter += 1
@@ -71,6 +73,33 @@ def main():
         for x in claims:
             colors[x-1] = "#E11299"
             labels[x-1] = str(x) + "Claim"
+
+        print(edges)
+        if len(edges) > 0:
+            rows, cols = zip(*edges)
+            data = [1] * len(rows)
+            # print(rows, cols)
+            # print(data)
+
+            # Creating a COO matrix
+            n = c_index - old_index # matrix dimension n x n
+            sparse_matrix = coo_matrix((data, (rows, cols)), shape=(n + 1, n + 1))
+
+            column_sums = sparse_matrix.sum(axis=0)
+            print(claims)
+            claims_wo = len(claims - set(np.array(column_sums).squeeze().nonzero()[0]))
+            claims_w = len(claims) - claims_wo
+            # print()
+            print(f"Claims with supporting premises: {claims_w}")
+            print(f"Claims without supporting premises: {claims_wo} ")
+            # what if claims_w is 0?
+            if len(claims) != 0:
+                print(f"Persuasiveness: {claims_w / len(claims)}")
+            else:
+                print(f"Persuasiveness: {1}")
+        # print()
+        # print("Sparse Matrix:")
+        # print(sparse_matrix.tocsr())
 
         net = Network(directed=True)
         net.add_nodes(nodes, label=labels, color=colors, title=hover_text)
