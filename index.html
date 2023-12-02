@@ -4,6 +4,40 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Automated Essay Scoring</title>
+  <style>
+    body {
+      background-color: #E5BEEC; /* Set background color to blue */
+      color: black; /* Set text color to white */
+      text-align: center; /* Center-align text */
+    }
+    /* Flex container for the two elements */
+    .flex-container {
+      display: flex;
+      margin-top: 20px;
+    }
+
+    #textAboveIframe {
+      text-align: left;
+      font-size: 18px; /* Adjust the font size */
+      margin-bottom: 1px; /* Add margin at the bottom for spacing */
+      margin-left: 5px;
+      font-family: 'EB Garamond', serif; /* Set the font-family to EB Garamond */
+    } 
+
+    /* Style for the iframe */
+    #fileContent {
+      width: 800px; /* Adjust the width as needed */
+      border: 800px;
+    }
+
+    /* Style for the textarea */
+    #essayText {
+      width: 50%; /* Adjust the width as needed */
+      height: 800px;
+      font-family: 'EB Garamond', serif; /* Set the font-family to EB Garamond */
+    }
+  </style>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond&display=swap">
 </head>
 <body>
 
@@ -16,13 +50,38 @@
   </select>
 
   <!-- iframe to display the selected HTML file -->
-  <div>
+  <!-- <div>
     <iframe id="fileContent" width="1200" height="800" frameborder="0"></iframe>
+     Textbox to display essay content -->
+    <!-- <textarea id="essayText" rows="10" cols="50" readonly>Hello World!</textarea>
+  </div> -->
+  <!-- Flex container for the iframe and textarea -->
+  
+  <div class="flex-container">
+    <!-- iframe to display the selected HTML file -->
+    <!-- Textbox to display essay content -->
+    <textarea id="essayText" rows="10" readonly>Essay Text</textarea>
+    <div>
+      <div id="textAboveIframe"></div>
+      <iframe id="fileContent" width="1200" height="1500" frameborder="0"></iframe>
+    </div>
+
   </div>
+
+  
   
   <script>
+    let essays;
+    let persuasiveness;
+    const essayFilePath = 'asap_essays.json';
+    const persuasiveFilePath = 'persuasiveness.json';
+    
     async function populateDropdown() {
+        essays = await readLocalJsonFile(essayFilePath);
+        persuasiveness = await readLocalJsonFile(persuasiveFilePath);
+        console.log(persuasiveness);
         var select = document.getElementById("fileSelector");
+        document.getElementById("essayText").value = "Essay Text Appears Here";
 
         try {
             // Assume the files are in the "visualizations" directory
@@ -39,7 +98,8 @@
             for (let i = 1; i < files.length; i++) {
                 var option = document.createElement("option");
                 option.value = directoryPath + files[i];
-                option.text = "Essay " + files[i].match(/\d+/)[0];
+                let essay_num = files[i].match(/\d+/)[0];
+                option.text = "Essay " + essay_num + " (D1: " + essays[essay_num]["domain1_score"] + ")";
                 console.log(option.value);
                 select.add(option);
             }
@@ -86,25 +146,25 @@
 
       // Set the iframe source to the selected HTML file
       document.getElementById("fileContent").src = file;
+      document.getElementById("essayText").value = essays[file.match(/\d+/)]["text"].replace(/\n/g, "\n\n");
+      document.getElementById("textAboveIframe").textContent = "Essay Persuasiveness: " + persuasiveness[file.match(/\d+/) + ".txt"] + " (Proportion of Claims supported by Premises)";
+      console.log(essays[file.match(/\d+/)]["text"]);
     }
 
-    // Initial population of the dropdown
     populateDropdown().then(loadFile());
 
     async function readLocalJsonFile(filePath) {
       try {
           const xhr = await fetchLocalFiles(filePath);
           const jsonData = JSON.parse(xhr.responseText);
-          console.log(jsonData);
+          return jsonData;
           // Now you can work with the JSON data
       } catch (error) {
           console.error(error.message);
+          return null;
       }
-  }
-
-    // Example usage
-    const localJsonFilePath = 'asap_essays.json';
-    readLocalJsonFile(localJsonFilePath);
+    }
+   
   </script>
 
 </body>

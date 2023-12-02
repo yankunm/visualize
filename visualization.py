@@ -28,6 +28,7 @@ def main():
     test_counter=0
 
     # For each file
+    persuasive_dict = {}
     for essay in file_names:
         if test_counter >= 20:
             break;
@@ -70,9 +71,14 @@ def main():
         # print(nodes_with_outgoing)
         claims -= set(nodes_with_outgoing)
         # print(claims)
-        for x in claims:
-            colors[x-1] = "#E11299"
-            labels[x-1] = str(x) + "Claim"
+        for x in nodes:
+            if x in claims:
+                colors[x-1] = "#E11299"
+                labels[x-1] = str(x) + " Claim"
+            else:
+                colors[x-1] = "#FDE2FE"
+                labels[x-1] = str(x) + " Premise"
+        
 
         print(edges)
         if len(edges) > 0:
@@ -85,6 +91,11 @@ def main():
             n = c_index - old_index # matrix dimension n x n
             sparse_matrix = coo_matrix((data, (rows, cols)), shape=(n + 1, n + 1))
 
+            # print(sparse_matrix)
+            # row_sums = sparse_matrix.sum(axis=1)
+            # row_sums = np.array(row_sums).squeeze().nonzero()[0]
+            # print(row_sums)
+
             column_sums = sparse_matrix.sum(axis=0)
             print(claims)
             claims_wo = len(claims - set(np.array(column_sums).squeeze().nonzero()[0]))
@@ -92,11 +103,18 @@ def main():
             # print()
             print(f"Claims with supporting premises: {claims_w}")
             print(f"Claims without supporting premises: {claims_wo} ")
+            
             # what if claims_w is 0?
             if len(claims) != 0:
+                persuasiveness = claims_w / len(claims)
                 print(f"Persuasiveness: {claims_w / len(claims)}")
             else:
+                persuasiveness = 1
                 print(f"Persuasiveness: {1}")
+            
+            persuasive_dict[essay] = str(round(persuasiveness * 100, 1)) + "%"
+        else:
+            persuasive_dict[essay] = str(0) + "%"
         # print()
         # print("Sparse Matrix:")
         # print(sparse_matrix.tocsr())
@@ -107,6 +125,13 @@ def main():
         net.show(f"./visualizations/visualize{essay}.html", notebook=False)
 
         print(f"Done with {essay}: {c_index - old_index} Components")
+    
+    # Serializing json
+    json_object = json.dumps(persuasive_dict, indent=4)
+ 
+    # Writing to sample.json
+    with open("persuasiveness.json", "w") as outfile:
+        outfile.write(json_object)
 
 
 if __name__ == "__main__":
